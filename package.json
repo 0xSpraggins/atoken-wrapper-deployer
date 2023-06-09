@@ -1,0 +1,36 @@
+{
+  "name": "atoken-wrapper-deployer",
+  "packageManager": "yarn@4.0.0-rc.43",
+  "scripts": {
+    "install": "yarn install && foundryup -p ./submodules/Aave-Vault",
+    "build": "hardhat compile && cd ./submodules/Aave-Vault && forge build && cd ../..",
+    "test": "yarn build && hardhat test"
+  },
+  "dependencies": {
+    "@safe-global/safe-apps-provider": "^0.17.0",
+    "bignumber.js": "^9.1.1",
+    "web3-eth-abi": "^4.0.1",
+    "web3-utils": "^4.0.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.0",
+    "ethers": "^6.5.1",
+    "hardhat": "^2.14.1",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.2",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0",
+    "typescript": "^5.1.3"
+  }
+}
