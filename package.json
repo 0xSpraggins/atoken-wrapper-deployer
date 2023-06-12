@@ -2,15 +2,16 @@
   "name": "atoken-wrapper-deployer",
   "packageManager": "yarn@4.0.0-rc.43",
   "scripts": {
-    "install": "yarn install && foundryup -p ./submodules/Aave-Vault",
-    "build": "hardhat compile && cd ./submodules/Aave-Vault && forge build && cd ../..",
-    "test": "yarn build && hardhat test"
+    "build": "hardhat compile",
+    "compile": "hardhat compile",
+    "test": "hardhat test"
   },
   "dependencies": {
-    "@safe-global/safe-apps-provider": "^0.17.0",
-    "bignumber.js": "^9.1.1",
-    "web3-eth-abi": "^4.0.1",
-    "web3-utils": "^4.0.1"
+    "@aave/core-v3": "1.17.1",
+    "@aave/periphery-v3": "1.23.0",
+    "@openzeppelin/contracts": "^4.9.1",
+    "@openzeppelin/contracts-upgradeable": "^4.9.1",
+    "fs": "^0.0.1-security"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",

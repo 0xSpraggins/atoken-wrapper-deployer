@@ -1,0 +1,22 @@
+{
+    "version": "1.0",
+    "chainId": "43114",
+    "createdAt": 0,
+    "meta": {
+      "name": "Aave V3 Wrapper Transactions Batch",
+      "description": "",
+      "txBuilderVersion": "1.13.3",
+      "createdFromSafeAddress": "",
+      "createdFromOwnerAddress": "",
+      "checksum": ""
+    },
+    "transactions": [
+      {
+        "to": "",
+        "value": "0",
+        "data": "",
+        "contractMethod": null,
+        "contractInputsValues": null
+      }
+    ]
+  }

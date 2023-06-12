@@ -7,7 +7,16 @@ import '@nomicfoundation/hardhat-ethers';
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const config: HardhatUserConfig = {
-  solidity: "0.8.18",
+  solidity: {
+    compilers: [
+      {
+        version: '0.8.10',
+      },
+      {
+        version: '0.8.19',
+      },
+    ],
+  },
   networks: {
     avalanche: {
       url: process.env.AVALANCHE_URL,
