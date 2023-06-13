@@ -957,7 +957,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:^4.9.1":
+"@openzeppelin/contracts-upgradeable@npm:^4.8.1":
   version: 4.9.1
   resolution: "@openzeppelin/contracts-upgradeable@npm:4.9.1"
   checksum: 6bb54e8e8723788dfa53a2d43f55f3d13eac4be552dea7f4418cd0aa26d087d019e00d77bf9114404c3bc56756691ff2c423c5bbc1ed59271d45efad213ce8a3
@@ -1698,7 +1698,7 @@ __metadata:
     "@nomicfoundation/hardhat-toolbox": "npm:^2.0.2"
     "@nomicfoundation/hardhat-verify": "npm:^1.0.0"
     "@openzeppelin/contracts": "npm:^4.9.1"
-    "@openzeppelin/contracts-upgradeable": "npm:^4.9.1"
+    "@openzeppelin/contracts-upgradeable": "npm:^4.8.1"
     "@typechain/ethers-v6": "npm:^0.4.0"
     "@typechain/hardhat": "npm:^8.0.0"
     "@types/chai": "npm:^4.3.5"

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 // All Rights Reserved © AaveCo
-// Contracts are from: https://github.com/aave/Aave-Vault
 
 pragma solidity ^0.8.10;
 
-import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
-import { IATokenVault } from "../interfaces/IATokenVault.sol";
+import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
+import {IATokenVault} from "../interfaces/IATokenVault.sol";
 import "./Constants.sol";
 
 /**

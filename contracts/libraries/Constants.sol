@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 // All Rights Reserved © AaveCo
-// Contracts are from: https://github.com/aave/Aave-Vault
 
 pragma solidity ^0.8.10;
 

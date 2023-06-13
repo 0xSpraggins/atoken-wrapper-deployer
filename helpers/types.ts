@@ -1,9 +1,12 @@
+import { BigNumberish } from "ethers";
+
 type Token = {
     shareName: string;
     shareSymbol: string;
     shareDecimals: number;
     underlyingAddress: string;
-    initialDeposit: number;
+    forkHolder: string;
+    initialDeposit: BigInt;
 }
 
 type AaveAvalanche = {

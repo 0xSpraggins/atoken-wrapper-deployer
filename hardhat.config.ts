@@ -16,11 +16,25 @@ const config: HardhatUserConfig = {
         version: '0.8.19',
       },
     ],
+    settings: {
+      optizer: {
+        enabled: true,
+        runs: 20000,
+      },
+    },
   },
   networks: {
     avalanche: {
       url: process.env.AVALANCHE_URL,
       accounts: [process.env.PRIVATE_KEY || ""],
+      allowUnlimitedContractSize: true,
+    },
+    hardhat: {
+      forking: {
+        url: process.env.AVALANCHE_URL || '',
+        blockNumber: 30879792,
+      },
+      allowUnlimitedContractSize: true,
     },
   },
 };

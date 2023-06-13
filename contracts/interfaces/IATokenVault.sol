@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 // All Rights Reserved © AaveCo
-// Contracts are from: https://github.com/aave/Aave-Vault
 
 pragma solidity ^0.8.10;
 
-import { IERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
-import { IERC4626Upgradeable } from "@openzeppelin/contracts-upgradeable/interfaces/IERC4626Upgradeable.sol";
-import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
-import { IPool } from "@aave/core-v3/contracts/interfaces/IPool.sol";
-import { IAToken } from "@aave/core-v3/contracts/interfaces/IAToken.sol";
-import { IRewardsController } from "@aave/periphery-v3/contracts/rewards/interfaces/IRewardsController.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
+import {IERC4626Upgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC4626Upgradeable.sol";
+import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
+import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
+import {IAToken} from "@aave/core-v3/contracts/interfaces/IAToken.sol";
+import {IRewardsController} from "@aave/periphery-v3/contracts/rewards/interfaces/IRewardsController.sol";
 
 /**
  * @title IATokenVault

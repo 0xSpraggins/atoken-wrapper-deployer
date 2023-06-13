@@ -1,53 +1,65 @@
 import path from "path";
 import { ethers, network } from "hardhat";
-import { getCreateAddress } from "ethers";
+import { getAddress, getCreateAddress } from "ethers";
 import { aaveAvalancheDeployment1 } from "../helpers/tokenRegistry";
+
 import { Artifacts } from 'hardhat/internal/artifacts';
-import * as txBuilder from "../txFiles/txbuilder_calldata.json";
+import * as txBuilderJson from "../txFiles/txbuilder_calldata.json";
 import * as fs from "fs";
 
 const artifactsPath = path.resolve('./artifacts')
 const artifacts = new Artifacts(artifactsPath);
-
-// Import txbuilder and pack all the data into a new json file called aave_v3_wrapperOutput.json
+const tokenArtifact = artifacts.readArtifactSync("ERC20Upgradeable");
 
 async function main(): Promise<void> {
+    const balancerMultisig = getAddress("0x326A7778DB9B741Cb2acA0DE07b9402C7685dAc6");
+
+    let [deployer] = await ethers.getSigners();
+
+    // if (deployer.address !== balancerMultisig) {
+    //     deployer = await ethers.getImpersonatedSigner(balancerMultisig);
+    // }
+
     const referalCode: number = 2977;
-    const proxyAdmin: string = "0x";
-    const _owner: string = "0x";
+    const proxyAdmin: string = await balancerMultisig;
+    const _owner: string = proxyAdmin;
 
     const plannedDeployment = aaveAvalancheDeployment1;
     const tokens = plannedDeployment.Tokens;
 
-    const transactions = [];
-
-    if (network.name != "avalanche") {
-        throw new Error("Invalid network");
-    } else {
-        console.log("Deploying to Avalanche");
+    // If we are on a forked network we need to impersonate holders and transfer tokens to the deployer
+    if (network.name === "hardhat") {
+        //transafer Avax to the deployer
+        for (let i = 0;i < tokens.length;i++) {
+            const holder = await ethers.getImpersonatedSigner(tokens[i].forkHolder);
+            const tokenContract = await ethers.getContractAt(tokenArtifact.abi, tokens[i].underlyingAddress, holder);
+            tokenContract.transfer(deployer.address, tokens[i].initialDeposit);
+        }
     }
 
-    const [multisig] = await ethers.getSigners();
+    const transactions = [];
 
-    console.log("Deploying contracts with the account:", multisig.address);
+    let vaultFactory = await ethers.getContractFactory("ATokenVault");
 
-    const balance = await ethers.provider.getBalance(multisig.address);
+    console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("Account balance:", balance.toString());
+    const provider = await ethers.getContractAt("IPoolAddressesProvider", plannedDeployment.PoolAddressProvider);
 
-    for (let i = 0;i < plannedDeployment.Tokens.length;i++) {
-        const vault = await ethers.deployContract("ATokenVault",
-            [
-                plannedDeployment.Tokens[i].underlyingAddress,
-                referalCode,
-                plannedDeployment.PoolAddressProvider
-            ],
+    for (let i = 0;i < tokens.length;i++) {
+        // Deploy the vault
+        const vault = await vaultFactory.deploy(
+            tokens[i].underlyingAddress,
+            referalCode,
+            await provider.getAddress()
         );
 
+        await vault.waitForDeployment();
         const vaultDeploymentTx = await vault.deploymentTransaction();
+        // Add the deployment transaction to the list of transactions
         transactions.push(vaultDeploymentTx);
 
-        // initialize the new vaults
+        console.log("Vault deployed to:", await vault.getAddress());
+        // encode the initialize calldata
         const data = await vault.interface.encodeFunctionData("initialize", [
             _owner,
             0, // Fee
@@ -59,59 +71,56 @@ async function main(): Promise<void> {
         // Compute the address of the proxy
         const proxyAddress = await getCreateAddress(
             {
-                from: multisig.address,
-                nonce: await multisig.getNonce() + 1,
+                from: await deployer.getAddress(),
+                nonce: await deployer.getNonce() + 1,
             }
         );
-
-        const tokenArtifact = artifacts.readArtifactSync("ERC20Upgradeable");
+        console.log(`Proxy address: ${proxyAddress}`);
         const tokenContract = await ethers.getContractAt(tokenArtifact.abi, tokens[i].underlyingAddress);
 
-        console.log(tokenContract.address);
-
-        // Approve the proxy to spend the underlying asset
+        // Approve the proxy to spend the underlying asset and add the transaction to the list
         const approveTx = await tokenContract.approve(proxyAddress, tokens[i].initialDeposit);
         transactions.push(approveTx);
 
-        console.log("Allowance for proxy: ", await tokenContract.allowance(multisig.address, proxyAddress));
-
         // Deploy the proxy
         const proxy = await ethers.deployContract("TransparentUpgradeableProxy", [
-            vault.address,
+            await vault.getAddress(),
             proxyAdmin,
             data
         ]);
-
-        // Get the transaction data from the deployement
+        console.log("Proxy deployed");
+        // Get the transaction data from the deployement and add it to the list
         const proxyDeploymentTx = await proxy.deploymentTransaction();
         transactions.push(proxyDeploymentTx);
 
-        if (proxy.address.toString() != proxyAddress) {
+        if (await proxy.getAddress() != proxyAddress) {
             throw new Error("Proxy address mismatch");
         } else {
-            console.log(`${await vault.name()} Proxy deployed at: ${proxy.address.toString()}`);
+            const vaultProxy = await ethers.getContractAt("ATokenVault", proxyAddress);
+            console.log(`${await vaultProxy.name()} deployed to: ${await vaultProxy.getAddress()}`);
         }
     }
 
     // Create multisig payload
-    const txBuilder = await JSON.parse("../scripts/txbuilder_calldata.json");
-    txBuilder.meta.createdFromSafeAddress = multisig.address;
-
+    const txBuilder = JSON.parse(JSON.stringify(txBuilderJson));
+    txBuilder.meta.createdFromSafeAddress = balancerMultisig;
     // Add the transactions to the multisig payload
     for (let i = 0;i < transactions.length;i++) {
         if (i == 0) {
-            txBuilder[0].to = transactions[i].receiver;
-            txBuilder[0].data = transactions[i].input;
+            txBuilder.transactions[0].to = transactions[i].to;
+            txBuilder.transactions[0].data = transactions[i].data;
         } else {
-            txBuilder.push({
-                to: transactions[i].receiver,
-                data: transactions[i].input
+            txBuilder.transactions.push({
+                to: transactions[i].to,
+                value: 0,
+                data: transactions[i].data,
             });
         }
     }
 
     const modifiedJson = JSON.stringify(txBuilder);
-    fs.writeFileSync("../scripts/aave_v3_wrapperOutput.json", modifiedJson);
+    const outputFile = fs.openSync(path.resolve("./txFiles/aave_v3_wrapperOutput.json"), "w");
+    fs.writeFileSync(outputFile, modifiedJson);
 
     console.log("Deployment completed");
 }
