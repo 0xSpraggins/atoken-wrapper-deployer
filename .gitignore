@@ -11,10 +11,11 @@
 
 #!.yarn/cache
 .pnp.*
-./cache
+cache
 
 #Environment variables
-.env/
+.env
 
 # Dependencies
 node_modules
+artifacts
