@@ -56,7 +56,9 @@ describe("ATokenVault", function () {
             data
         ]);
 
-        expect(await proxy.name()).to.equal("Wrapped aDAI");
-        expect(await proxy.symbol()).to.equal("waDAI");
+        const vaultProxy = await ethers.getContractAt("ATokenVault", proxyAddress);
+
+        expect(await vaultProxy.name()).to.equal("Wrapped aDAI");
+        expect(await vaultProxy.symbol()).to.equal("waDAI");
     });
 });

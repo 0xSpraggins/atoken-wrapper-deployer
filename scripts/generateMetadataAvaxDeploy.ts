@@ -107,19 +107,18 @@ async function main(): Promise<void> {
     // Add the transactions to the multisig payload
     for (let i = 0;i < transactions.length;i++) {
         if (i == 0) {
-            txBuilder.transactions[0].to = transactions[i].to;
-            txBuilder.transactions[0].data = transactions[i].data;
-        } else {
-            txBuilder.transactions.push({
-                to: transactions[i].to,
-                value: 0,
-                data: transactions[i].data,
-            });
+            txBuilder.transactions.shift();
         }
+        txBuilder.transactions.push({
+            to: transactions[i].to,
+            value: 0,
+            data: transactions[i].data,
+        });
+
     }
 
     const modifiedJson = JSON.stringify(txBuilder);
-    const outputFile = fs.openSync(path.resolve("./txFiles/aave_v3_wrapperOutput.json"), "w");
+    const outputFile = fs.openSync(path.resolve("./txFiles/aave_v3_wrapper_output.json"), "w");
     fs.writeFileSync(outputFile, modifiedJson);
 
     console.log("Deployment completed");

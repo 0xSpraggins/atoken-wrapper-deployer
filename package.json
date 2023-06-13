@@ -9,9 +9,13 @@
   "dependencies": {
     "@aave/core-v3": "1.17.1",
     "@aave/periphery-v3": "1.23.0",
-    "@openzeppelin/contracts": "4.9.1",
+    "@openzeppelin/contracts": "4.8.2",
     "@openzeppelin/contracts-upgradeable": "4.8.1",
-    "fs": "^0.0.1-security"
+    "@safe-global/api-kit": "^1.1.0",
+    "@safe-global/protocol-kit": "^1.0.1",
+    "@safe-global/safe-core-sdk-types": "^2.0.0",
+    "fs": "^0.0.1-security",
+    "web3": "1.10"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
