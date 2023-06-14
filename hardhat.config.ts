@@ -1,10 +1,9 @@
 import * as dotenv from 'dotenv';
-
+"@nomiclabs/hardhat-ethers"
 dotenv.config();
 
 import { HardhatUserConfig } from 'hardhat/config';
-import '@nomicfoundation/hardhat-ethers';
-
+import "@nomiclabs/hardhat-ethers";
 /** @type import('hardhat/config').HardhatUserConfig */
 const config: HardhatUserConfig = {
   solidity: {
@@ -35,6 +34,7 @@ const config: HardhatUserConfig = {
         blockNumber: 30879792,
       },
       allowUnlimitedContractSize: true,
+      chainId: 31337,
     },
   },
 };
