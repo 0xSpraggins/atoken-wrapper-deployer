@@ -24,7 +24,7 @@ async function main() {
     console.log(impersonatedSafe.address);
     // Initialize the Safe SDK
     const safeSdk: Safe = await Safe.create({
-        ethers,
+        ethAdapter: ethers,
         safeAddress,
         providerOrSigner: impersonatedSafe
     });
