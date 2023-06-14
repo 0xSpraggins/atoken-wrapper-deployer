@@ -1,7 +1,7 @@
 import originalBytecode from "../original_wrapper_bytecode.json";
 import deployedBytecode from "../artifacts/contracts/ATokenVault.sol/ATokenVault.json";
 
-async function compare() {
+async function main() {
     if (originalBytecode.bytecode.toString() === deployedBytecode.toString()) {
         console.log("Bytecode matches");
     } else {
@@ -9,4 +9,4 @@ async function compare() {
     }
 }
 
-compare();
+main();
