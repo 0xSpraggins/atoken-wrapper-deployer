@@ -9,10 +9,10 @@ type Token = {
     initialDeposit: BigInt;
 }
 
-type AaveAvalanche = {
+type AaveWrapper = {
     LendingPool: string;
     PoolAddressProvider: string;
     Tokens: Token[];
 }
 
-export { Token, AaveAvalanche };
+export { Token, AaveWrapper };

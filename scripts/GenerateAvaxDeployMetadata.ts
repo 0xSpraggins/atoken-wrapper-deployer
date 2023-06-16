@@ -1,7 +1,7 @@
 import path from "path";
 import { ethers, network } from "hardhat";
 import { aaveAvalancheDeployment1 } from "../helpers/tokenRegistry";
-
+import { testDeployment } from "../helpers/testTokenRegistry";
 import { Artifacts } from 'hardhat/internal/artifacts';
 import * as txBuilderJson from "../txFiles/txbuilder_calldata.json";
 import * as fs from "fs";
@@ -9,21 +9,22 @@ import * as fs from "fs";
 const artifactsPath = path.resolve('./artifacts')
 const artifacts = new Artifacts(artifactsPath);
 const tokenArtifact = artifacts.readArtifactSync("ERC20Upgradeable");
+const verificationReceipt = [];
 
 async function main(): Promise<void> {
     const balancerMultisig = "0x326A7778DB9B741Cb2acA0DE07b9402C7685dAc6";
-
     let [deployer] = await ethers.getSigners();
-
-    if (deployer.address !== balancerMultisig) {
-        deployer = await ethers.getImpersonatedSigner(balancerMultisig);
-    }
-
+    let plannedDeployment;
     const referalCode: number = 2977;
-    const proxyAdmin: string = await balancerMultisig;
+    const proxyAdmin: string = balancerMultisig;
     const _owner: string = proxyAdmin;
 
-    const plannedDeployment = aaveAvalancheDeployment1;
+    if (network.name === "sepolia") {
+        plannedDeployment = testDeployment;
+    } else {
+        plannedDeployment = aaveAvalancheDeployment1;
+    }
+
     const tokens = plannedDeployment.Tokens;
 
     // If we are on a forked network we need to impersonate holders and transfer tokens to the deployer
@@ -32,19 +33,28 @@ async function main(): Promise<void> {
         for (let i = 0;i < tokens.length;i++) {
             const holder = await ethers.getImpersonatedSigner(tokens[i].forkHolder);
             await holder.sendTransaction({
-                to: deployer.address,
-                value: ethers.utils.parseEther("1")
+                to: deployer.getAddress(),
+                value: ethers.parseEther("1")
             });
             const tokenContract = await ethers.getContractAt(tokenArtifact.abi, tokens[i].underlyingAddress, holder);
-            await tokenContract.transfer(deployer.address, tokens[i].initialDeposit);
+            await tokenContract.transfer(deployer.getAddress(), tokens[i].initialDeposit);
+        }
+    }
+
+    // Check to make sure we have enough underlying tokens to deploy the vaults
+    for (let i = 0;i < tokens.length;i++) {
+        const tokenContract = await ethers.getContractAt(tokenArtifact.abi, tokens[i].underlyingAddress);
+        const balance = await tokenContract.balanceOf(deployer.getAddress());
+        if (balance < tokens[i].initialDeposit) {
+            throw new Error(`Insufficient balance for ${tokens[i].underlyingAddress} on ${network.name}`);
         }
     }
 
     const transactions = [];
 
     let vaultFactory = await ethers.getContractFactory("ATokenVault");
-
-    console.log("Deploying contracts with the account:", deployer.address);
+    console.log("vault contract size: ", Buffer.byteLength(vaultFactory.bytecode))
+    console.log("Deploying contracts with the account:", await deployer.getAddress());
 
     const provider = await ethers.getContractAt("IPoolAddressesProvider", plannedDeployment.PoolAddressProvider);
 
@@ -53,14 +63,14 @@ async function main(): Promise<void> {
         const vault = await vaultFactory.connect(deployer).deploy(
             tokens[i].underlyingAddress,
             referalCode,
-            await provider.address
+            await provider.getAddress()
         );
-        const vaultDeploymentTx = await vault.deployTransaction.wait();
+        const vaultDeploymentTx = await vault.deploymentTransaction();
 
         // Add the deployment transaction to the list of transactions
         transactions.push(vaultDeploymentTx);
 
-        console.log("Vault deployed to:", await vault.address);
+        console.log("Vault deployed to:", await vault.getAddress());
         // encode the initialize calldata
         const data = await vault.interface.encodeFunctionData("initialize", [
             _owner,
@@ -71,10 +81,10 @@ async function main(): Promise<void> {
         ]);
 
         // Compute the address of the proxy
-        const proxyAddress = await ethers.utils.getContractAddress(
+        const proxyAddress = await ethers.getCreateAddress(
             {
-                from: await deployer.address,
-                nonce: await deployer.getTransactionCount() + 1,
+                from: await deployer.getAddress(),
+                nonce: await deployer.getNonce() + 1,
             }
         );
         console.log(`Proxy address: ${proxyAddress}`);
@@ -87,20 +97,20 @@ async function main(): Promise<void> {
 
         // Deploy the proxy
         const proxy = await ethers.deployContract("TransparentUpgradeableProxy", [
-            await vault.address,
+            await vault.getAddress(),
             proxyAdmin,
             data
         ], deployer);
         console.log("Proxy deployed");
         // Get the transaction data from the deployement and add it to the list
-        const proxyDeploymentTx = await proxy.deployTransaction.wait();;
+        const proxyDeploymentTx = await proxy.deploymentTransaction();
         transactions.push(proxyDeploymentTx);
 
-        if (await proxy.address != proxyAddress) {
+        if (await proxy.getAddress() != proxyAddress) {
             throw new Error("Proxy address mismatch");
         } else {
             const vaultProxy = await ethers.getContractAt("ATokenVault", proxyAddress);
-            console.log(`${await vaultProxy.name()} deployed to: ${await vaultProxy.address}`);
+            console.log(`${await vaultProxy.name()} deployed to: ${await vaultProxy.getAddress()}`);
         }
     }
 

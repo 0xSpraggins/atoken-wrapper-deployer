@@ -1,9 +1,11 @@
 import * as dotenv from 'dotenv';
-"@nomiclabs/hardhat-ethers"
+
 dotenv.config();
 
 import { HardhatUserConfig } from 'hardhat/config';
-import "@nomiclabs/hardhat-ethers";
+import '@nomicfoundation/hardhat-ethers';
+import "@nomicfoundation/hardhat-verify";
+
 /** @type import('hardhat/config').HardhatUserConfig */
 const config: HardhatUserConfig = {
   solidity: {
@@ -34,8 +36,15 @@ const config: HardhatUserConfig = {
         blockNumber: 30879792,
       },
       allowUnlimitedContractSize: true,
-      chainId: 31337,
     },
+    sepolia: {
+      url: process.env.SEPOLIA_URL || '',
+      accounts: [process.env.PRIVATE_KEY || ""],
+      allowUnlimitedContractSize: true,
+    },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };
 

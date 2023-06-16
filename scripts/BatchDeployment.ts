@@ -14,7 +14,7 @@ async function main() {
     const safeAddress = "0x326A7778DB9B741Cb2acA0DE07b9402C7685dAc6";
     const privateKey = process.env.PRIVATE_KEY || "";
 
-    const provider = new ethers.providers.JsonRpcProvider(process.env.AVALANCHE_TENDERLY_FORK || '');
+    const provider = new ethers.providers.JsonRpcProvider(process.env.TENDERLY_RPC_URL || '');
     const impersonatedAccount = new hre.ethers.Wallet(privateKey, provider);
     console.log("AVAX Balance: ", (await provider.getBalance(safeAddress)).toString());
     // Impersonate the Safe
@@ -24,7 +24,7 @@ async function main() {
     console.log(impersonatedSafe.address);
     // Initialize the Safe SDK
     const safeSdk: Safe = await Safe.create({
-        ethAdapter: ethers,
+        ethers,
         safeAddress,
         providerOrSigner: impersonatedSafe
     });
